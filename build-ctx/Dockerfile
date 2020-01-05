@@ -64,6 +64,14 @@ RUN \
 RUN a2ensite 000-default.conf
 
 #
+ENV CF_WEBROOT_SITE=site-html
+
+RUN \
+	mkdir ${CF_WEBROOT}/${CF_WEBROOT_SITE} \
+	&& chmod u=rwx,g=rwxs,o= ${CF_WEBROOT}/${CF_WEBROOT_SITE} \
+	&& mv ${CF_WEBROOT}/index.html ${CF_WEBROOT}/${CF_WEBROOT_SITE}/
+
+#
 RUN \
 	apt-get --quiet --yes autoclean \
 	&& apt-get --quiet --yes autoremove \
