@@ -280,12 +280,12 @@ fi
 
 if [ -n "$CF_LANG" ]; then
 	echo "$VAR_MYNAME: Updating locale with '$CF_LANG'..."
-	update-locale LANG=$CF_LANG || {
-		_sleepBeforeAbort
-	}
 	export LANG=$CF_LANG
 	export LANGUAGE=$CF_LANG
 	export LC_ALL=$CF_LANG
+	update-locale LANG=$CF_LANG || {
+		_sleepBeforeAbort
+	}
 fi
 
 if [ -n "$CF_TIMEZONE" ]; then
