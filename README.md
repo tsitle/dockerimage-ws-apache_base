@@ -12,6 +12,9 @@ For hosting static HTML websites.
 ## Webserver TCP Port
 The webserver is listening only on TCP port 80 by default.
 
+## Docker Container usage
+See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-apache\_base](https://github.com/tsitle/dockercontainer-ws-apache_base)
+
 ## Docker Container configuration
 - CF\_DOCROOT [string]: Document Root directory (e.g. "/var/www/html")
 - CF\_WEBROOT [string]: Website Root directory (e.g. "/var/www/html")
@@ -46,9 +49,7 @@ services:
       - "$PWD/mpcron/root:/var/spool/cron/crontabs/root"
     environment:
       - CF_PROJ_PRIMARY_FQDN=example-host.localhost
-      - CF_WWWFPM_USER_ID=<YOUR_UID>
-      - CF_WWWFPM_GROUP_ID=<YOUR_GID>
-      - CF_SET_OWNER_AND_PERMS_WEBROOT=false
+      - CF_SET_OWNER_AND_PERMS_WEBROOT=true
       - CF_ENABLE_CRON=true
       - CF_LANG=de_DE.UTF-8
       - CF_TIMEZONE=Europe/Berlin
