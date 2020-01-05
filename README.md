@@ -16,9 +16,6 @@ The webserver is listening only on TCP port 80 by default.
 See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-apache\_base](https://github.com/tsitle/dockercontainer-ws-apache_base)
 
 ## Docker Container configuration
-- CF\_DOCROOT [string]: Document Root directory (e.g. "/var/www/html")
-- CF\_WEBROOT [string]: Website Root directory (e.g. "/var/www/html")
-- CF\_WEBROOT\_SITE [string]: Subdirectory of CF\_WEBROOT to be used as actual Website Root directory (e.g. for Neos CMS "Web/")
 - CF\_PROJ\_PRIMARY\_FQDN [string]: FQDN for website (e.g. "mywebsite.localhost")
 - CF\_SET\_OWNER\_AND\_PERMS\_WEBROOT [bool]: Recursively chown and chmod CF\_WEBROOT?
 - CF\_WWWDATA\_USER\_ID [int]: User-ID for www-data
