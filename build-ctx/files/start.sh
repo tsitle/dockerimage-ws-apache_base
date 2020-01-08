@@ -200,6 +200,20 @@ function _changeApacheServername() {
 
 # ----------------------------------------------------------
 
+function _changePhpTimezone() {
+	local TMP_FN="/etc/php/${CF_PHP_FPM_VERSION}/fpm/php.ini"
+
+	[ ! -f "$TMP_FN" ] && return 0
+	#
+	grep -q "^;date.timezone =" "$TMP_FN"
+	[ $? -ne 0 ] && return 0
+	local TMP_TZ="$(echo -n "$CF_TIMEZONE" | sed -e 's/\//\\\//g')"
+	sed -e "s/^;date.timezone =\$/date.timezone = '$TMP_TZ'/g" "$TMP_FN" > "${TMP_FN}.tmp"
+	mv "${TMP_FN}.tmp" "$TMP_FN"
+}
+
+# ----------------------------------------------------------
+
 echo "$VAR_MYNAME: createUserGroup 'www-data'..."
 _createUserGroup "www-data" "${CF_WWWDATA_USER_ID}" "${CF_WWWDATA_GROUP_ID}" || {
 	_sleepBeforeAbort
@@ -297,6 +311,8 @@ if [ -n "$CF_TIMEZONE" ]; then
 	export TZ=$CF_TIMEZONE
 	ln -snf /usr/share/zoneinfo/$CF_TIMEZONE /etc/localtime
 	echo $CF_TIMEZONE > /etc/timezone
+	#
+	_changePhpTimezone
 fi
 
 # ----------------------------------------------------------
