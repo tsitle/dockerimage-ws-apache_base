@@ -373,7 +373,7 @@ function _ssl_setOwnerAndPerms() {
 # @param string $3 optional: "internal"
 #
 # @return int EXITCODE
-function _ssl_generateSsl() {
+function _ssl_generateCert() {
 	local TMP_START_PATH_SUF=""
 	[ "$3" = "internal" ] && TMP_START_PATH_SUF="-$3"
 	local TMP_START_PRIVKEY_FN="${LCFG_SSL_PATH_HOST_KEYS}${TMP_START_PATH_SUF}/private-${1}.${2}.key"
@@ -389,15 +389,15 @@ function _ssl_generateSsl() {
 }
 
 # @return int EXITCODE
-function _ssl_generateSslDefaultSite() {
+function _ssl_generateCertDefaultSite() {
 	local TMP_FQDN="${CF_PROJ_PRIMARY_FQDN:-default.localhost}"
 	local TMP_HOSTN="$(echo -n "$TMP_FQDN" | cut -f1 -d.)"
 	local TMP_DOM="$(echo -n "$TMP_FQDN" | cut -f2- -d.)"
-	_ssl_generateSsl "$TMP_HOSTN" "$TMP_DOM" "internal"
+	_ssl_generateCert "$TMP_HOSTN" "$TMP_DOM" "internal"
 }
 
 # @return int EXITCODE
-function _ssl_generateSslOtherVhosts() {
+function _ssl_generateCertOtherVhosts() {
 	local TMP_CNT="$(find $LCFG_WS_SITES_PATH_ENAB/ -maxdepth 1 -type l -name "*-https${LCFG_WS_SITECONF_FEXT}" | grep -v "$LCFG_WS_SITECONF_DEF_HTTPS" | wc -l)"
 	if [ "$TMP_CNT" = "0" ]; then
 		_log_def "No further enabled virtual hosts with HTTPS found."
@@ -486,14 +486,14 @@ if [ "$CF_ENABLE_HTTPS" = "true" ]; then
 
 		# generate SSL-Cert/Key for default virtual host
 		if [ -h $LCFG_WS_SITES_PATH_ENAB/$LCFG_WS_SITECONF_DEF_HTTPS ]; then
-			_ssl_generateSslDefaultSite || {
+			_ssl_generateCertDefaultSite || {
 				_sleepBeforeAbort
 			}
 		fi
 	fi
 
 	# generate SSL-Cert/Key for all other virtual hosts
-	_ssl_generateSslOtherVhosts || exit 1
+	_ssl_generateCertOtherVhosts || exit 1
 
 	# enable Apache SSL module
 	a2enmod ssl || {
