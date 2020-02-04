@@ -42,10 +42,16 @@ function _sleepBeforeAbort() {
 
 # ----------------------------------------------------------
 
+LCFG_LOG_PATH="/var/log"
+
 _log_def "----------------"
+
+# ----------------------------------------------------------
 
 export HOST_IP=$(/sbin/ip route|awk '/default/ { print $3 }')
 echo "$HOST_IP dockerhost" >> /etc/hosts
+
+# ----------------------------------------------------------
 
 LVAR_WS_IS_APACHE=false
 [ -d /etc/apache2 ] && LVAR_WS_IS_APACHE=true
@@ -55,6 +61,8 @@ if [ "$LVAR_WS_IS_APACHE" != "true" -a "$LVAR_WS_IS_NGINX" != "true" ]; then
 	_log_err "Error: could not determine webserver type. Aborting."
 	_sleepBeforeAbort
 fi
+
+# ----------------------------------------------------------
 
 CF_PROJ_PRIMARY_FQDN="${CF_PROJ_PRIMARY_FQDN:-}"
 
@@ -84,8 +92,7 @@ CF_SET_OWNER_AND_PERMS_WEBROOT=${CF_SET_OWNER_AND_PERMS_WEBROOT:-false}
 CF_ENABLE_XDEBUG=${CF_ENABLE_XDEBUG:-false}
 CF_XDEBUG_REMOTE_HOST="${CF_XDEBUG_REMOTE_HOST:-}"
 
-#
-LCFG_LOG_PATH="/var/log"
+# ----------------------------------------------------------
 
 LCFG_WS_SITES_PATH_AVAIL=""
 LCFG_WS_SITES_PATH_ENAB=""
