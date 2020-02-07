@@ -322,9 +322,11 @@ function _changeApacheServername() {
 
 # ----------------------------------------------------------
 
+# @param string $1 Filename
+#
 # @return int EXITCODE
-function _changePhpTimezone() {
-	local TMP_FN="/etc/php/${CF_PHP_FPM_VERSION}/fpm/php.ini"
+function _changePhpTimezone_sub() {
+	local TMP_FN="/etc/php/${CF_PHP_FPM_VERSION}/$1"
 
 	[ ! -f "$TMP_FN" ] && return 0
 	#
@@ -333,6 +335,12 @@ function _changePhpTimezone() {
 	local TMP_TZ="$(echo -n "$CF_TIMEZONE" | sed -e 's/\//\\\//g')"
 	sed -e "s/^;date.timezone =\$/date.timezone = '$TMP_TZ'/g" "$TMP_FN" > "${TMP_FN}.tmp" || return 1
 	mv "${TMP_FN}.tmp" "$TMP_FN"
+}
+
+# @return int EXITCODE
+function _changePhpTimezone() {
+	_changePhpTimezone_sub "fpm/php.ini" || return 1
+	_changePhpTimezone_sub "cli/php.ini"
 }
 
 # @return int EXITCODE
