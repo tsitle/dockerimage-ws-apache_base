@@ -22,7 +22,6 @@ RUN \
 		apt-get update \
 		&& apt-get install -y --no-install-recommends \
 			# additional packages \
-				procps \
 				graphicsmagick \
 				cron \
 				sudo \
