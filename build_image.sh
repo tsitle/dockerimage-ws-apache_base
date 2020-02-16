@@ -64,7 +64,7 @@ LVAR_DEBIAN_RELEASE="buster"
 LVAR_DEBIAN_VERSION="10.02"
 
 LVAR_IMAGE_NAME="ws-apache-base-$LVAR_DEBIAN_DIST"
-LVAR_IMAGE_VER="2.2"
+LVAR_IMAGE_VER="2.3t"
 
 # ----------------------------------------------------------
 
