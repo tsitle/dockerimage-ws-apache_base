@@ -457,25 +457,21 @@ function _ssl_generateCertOtherVhosts() {
 	return 0
 }
 
+# Change numeric ID of group 'ssl-cert' to user-supplied numeric ID
+#
 # @return int EXITCODE
 function _ssl_createSslCertGroup() {
-	# change numeric ID of group 'ssl-cert' to user-supplied numeric ID
-	getent group ssl-cert >/dev/null 2>&1 && groupdel ssl-cert
-	local TMP_GRP_ARGS=""
-	if [ ${CF_SSLCERT_GROUP_ID:-0} -ne 0 ]; then
-		_log_def "Setting numeric group ID of ssl-cert to ${CF_SSLCERT_GROUP_ID}..."
+	getent group "ssl-cert" >/dev/null 2>&1 && groupdel "ssl-cert"
 
-		TMP_GRP_ARGS="-g ${CF_SSLCERT_GROUP_ID}"
-	else
-		_log_def "Not modifying group ssl-cert's numeric ID."
-	fi
-	groupadd $TMP_GRP_ARGS ssl-cert
+	_log_def "Setting numeric group ID of ssl-cert to ${CF_SSLCERT_GROUP_ID}..."
+	groupadd -g ${CF_SSLCERT_GROUP_ID} "ssl-cert"
 }
 
 # ----------------------------------------------------------
 
 if [ "$CF_ENABLE_HTTPS" = "true" ]; then
 	_ssl_createSslCertGroup || {
+		_log_err "Error: creating ssl-cert group with GID=${CF_SSLCERT_GROUP_ID} failed. Aborting."
 		_sleepBeforeAbort
 	}
 
@@ -560,7 +556,7 @@ if [ -n "$CF_PHP_FPM_VERSION" ]; then
 	_createUserGroup "wwwphpfpm" "${CF_WWWFPM_USER_ID}" "${CF_WWWFPM_GROUP_ID}" "www-data" || {
 		_sleepBeforeAbort
 	}
-	mkdir /home/wwwphpfpm
+	[ ! -d /home/wwwphpfpm ] && mkdir /home/wwwphpfpm
 	chown wwwphpfpm:wwwphpfpm /home/wwwphpfpm
 	chmod 750 /home/wwwphpfpm
 	_log_def "createPhpFpmUploadDir..."
@@ -641,7 +637,8 @@ fi
 
 # ----------------------------------------------------------
 
-if [ -n "$CF_PHP_FPM_VERSION" ]; then
+if [ -n "$CF_PHP_FPM_VERSION" ] && \
+		[ "$CF_PHP_FPM_VERSION" != "7.4" -o "$CF_CPUARCH_DEB_DIST" = "amd64" ]; then
 	if [ -n "$CF_XDEBUG_REMOTE_HOST" ]; then
 		_changeXdebugRemoteHost || {
 			_sleepBeforeAbort
