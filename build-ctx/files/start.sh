@@ -92,6 +92,20 @@ CF_SET_OWNER_AND_PERMS_WEBROOT=${CF_SET_OWNER_AND_PERMS_WEBROOT:-false}
 CF_ENABLE_XDEBUG=${CF_ENABLE_XDEBUG:-false}
 CF_XDEBUG_REMOTE_HOST="${CF_XDEBUG_REMOTE_HOST:-}"
 
+CF_PHPFPM_RUN_AS_WWWDATA=${CF_PHPFPM_RUN_AS_WWWDATA:-false}
+CF_PHPFPM_ENABLE_OPEN_BASEDIR="${CF_PHPFPM_ENABLE_OPEN_BASEDIR:-true}"
+CF_PHPFPM_UPLOAD_TMP_DIR="${CF_PHPFPM_UPLOAD_TMP_DIR:-/var/www/upload_tmp_dir/}"
+CF_PHPFPM_PM_MAX_CHILDREN=${CF_PHPFPM_PM_MAX_CHILDREN:-5}
+CF_PHPFPM_PM_START_SERVERS=${CF_PHPFPM_PM_START_SERVERS:-2}
+CF_PHPFPM_PM_MIN_SPARE_SERVERS=${CF_PHPFPM_PM_MIN_SPARE_SERVERS:-1}
+CF_PHPFPM_PM_MAX_SPARE_SERVERS=${CF_PHPFPM_PM_MAX_SPARE_SERVERS:-3}
+CF_PHPFPM_UPLOAD_MAX_FILESIZE="${CF_PHPFPM_UPLOAD_MAX_FILESIZE:-100M}"
+CF_PHPFPM_POST_MAX_SIZE="${CF_PHPFPM_POST_MAX_SIZE:-100M}"
+CF_PHPFPM_MEMORY_LIMIT="${CF_PHPFPM_MEMORY_LIMIT:-512M}"
+CF_PHPFPM_MAX_EXECUTION_TIME="${CF_PHPFPM_MAX_EXECUTION_TIME:-600}"
+CF_PHPFPM_MAX_INPUT_TIME="${CF_PHPFPM_MAX_INPUT_TIME:-600}"
+CF_PHPFPM_HTML_ERRORS=${CF_PHPFPM_HTML_ERRORS:-true}
+
 # ----------------------------------------------------------
 
 LCFG_WS_SITES_PATH_AVAIL=""
@@ -215,10 +229,16 @@ function _createUserGroup() {
 #
 # @return void
 function _createPhpFpmUploadDir() {
-	local TMP_UPL_DIR="/var/www/upload_tmp_dir"
+	local TMP_UPL_DIR="$(echo -n "$CF_PHPFPM_UPLOAD_TMP_DIR" | sed -e 's,/$,,g')"
 	[ -d "$TMP_UPL_DIR" ] || mkdir "$TMP_UPL_DIR"
-	chown wwwphpfpm:wwwphpfpm "$TMP_UPL_DIR" || return 1
-	chmod u=rwx,g=rwxs,o= "$TMP_UPL_DIR"
+	if [ "$TMP_UPL_DIR" != "/tmp" -a "$TMP_UPL_DIR" != "/var/tmp" ]; then
+		if [ "$CF_PHPFPM_RUN_AS_WWWDATA" != "true" ]; then
+			chown wwwphpfpm:wwwphpfpm "$TMP_UPL_DIR" || return 1
+		else
+			chown www-data:www-data "$TMP_UPL_DIR" || return 1
+		fi
+		chmod u=rwx,g=rwxs,o= "$TMP_UPL_DIR"
+	fi
 }
 
 # ----------------------------------------------------------
@@ -227,7 +247,7 @@ function _createPhpFpmUploadDir() {
 function _setOwnerPermsWebroot() {
 	local TMP_WEB_USER="www-data"
 	local TMP_WEB_GROUP="www-data"
-	if [ -n "$CF_PHP_FPM_VERSION" ]; then
+	if [ -n "$CF_PHP_FPM_VERSION" -a "$CF_PHPFPM_RUN_AS_WWWDATA" != "true" ]; then
 		TMP_WEB_USER="wwwphpfpm"
 		TMP_WEB_GROUP="wwwphpfpm"
 	fi
@@ -318,6 +338,46 @@ function _changeApacheServername() {
 				$LCFG_WS_SITES_PATH_AVAIL/$LCFG_WS_SITECONF_DEF_HTTPS || return 1
 	fi
 	return 0
+}
+
+# ----------------------------------------------------------
+
+# @return int EXITCODE
+function _changePhpFpmSettings() {
+	if [ "$CF_PHPFPM_RUN_AS_WWWDATA" != "true" ]; then
+		sed -i \
+				-e "s/^user = .*$/user = wwwphpfpm/g" \
+				-e "s/^group = .*$/group = wwwphpfpm/g" \
+				/etc/php/${CF_PHP_FPM_VERSION}/fpm/pool.d/www.conf || return 1
+	fi
+	#
+	local TMP_UTD_PATH_SED="$CF_PHPFPM_UPLOAD_TMP_DIR"
+	echo -n "$TMP_UTD_PATH_SED" | grep -e "/$" || TMP_UTD_PATH_SED+="/"
+	TMP_UTD_PATH_SED="$(echo -n "$TMP_UTD_PATH_SED" | sed -e 's/\//\\\//g')"
+	sed -i \
+			-e "s/<UPLOADTMPDIR>/${TMP_UTD_PATH_SED}/g" \
+			/etc/php/${CF_PHP_FPM_VERSION}/fpm/pool.d/www.conf || return 1
+	#
+	if [ "$CF_PHPFPM_ENABLE_OPEN_BASEDIR" = "true" ]; then
+		sed -i \
+				-e "s/^;php_admin_value\[open_basedir\] = /php_admin_value[open_basedir] = /g" \
+				/etc/php/${CF_PHP_FPM_VERSION}/fpm/pool.d/www.conf || return 1
+	fi
+	#
+	local TMP_HE="on"
+	[ "$CF_PHPFPM_HTML_ERRORS" != "true" ] && TMP_HE="off"
+	sed -i \
+			-e "s/^pm\.max_children = .*$/pm.max_children = ${CF_PHPFPM_PM_MAX_CHILDREN}/g" \
+			-e "s/^pm\.start_servers = .*$/pm.start_servers = ${CF_PHPFPM_PM_START_SERVERS}/g" \
+			-e "s/^pm\.min_spare_servers = .*$/pm.min_spare_servers = ${CF_PHPFPM_PM_MIN_SPARE_SERVERS}/g" \
+			-e "s/^pm\.max_spare_servers = .*$/pm.max_spare_servers = ${CF_PHPFPM_PM_MAX_SPARE_SERVERS}/g" \
+			-e "s/^php_admin_value\[upload_max_filesize\] = .*$/php_admin_value[upload_max_filesize] = ${CF_PHPFPM_UPLOAD_MAX_FILESIZE}/g" \
+			-e "s/^php_admin_value\[post_max_size\] = .*$/php_admin_value[post_max_size] = ${CF_PHPFPM_POST_MAX_SIZE}/g" \
+			-e "s/^php_admin_value\[memory_limit\] = .*$/php_admin_value[memory_limit] = ${CF_PHPFPM_MEMORY_LIMIT}/g" \
+			-e "s/^php_admin_value\[max_execution_time\] = .*$/php_admin_value[max_execution_time] = ${CF_PHPFPM_MAX_EXECUTION_TIME}/g" \
+			-e "s/^php_admin_value\[max_input_time\] = .*$/php_admin_value[max_input_time] = ${CF_PHPFPM_MAX_INPUT_TIME}/g" \
+			-e "s/^php_admin_flag\[html_errors\] = .*$/php_admin_flag[html_errors] = ${TMP_HE}/g" \
+			/etc/php/${CF_PHP_FPM_VERSION}/fpm/pool.d/www.conf
 }
 
 # ----------------------------------------------------------
@@ -552,16 +612,23 @@ _createUserGroup "www-data" "${CF_WWWDATA_USER_ID}" "${CF_WWWDATA_GROUP_ID}" || 
 }
 
 if [ -n "$CF_PHP_FPM_VERSION" ]; then
-	_log_def "createUserGroup 'wwwphpfpm'..."
-	_createUserGroup "wwwphpfpm" "${CF_WWWFPM_USER_ID}" "${CF_WWWFPM_GROUP_ID}" "www-data" || {
-		_sleepBeforeAbort
-	}
-	[ ! -d /home/wwwphpfpm ] && mkdir /home/wwwphpfpm
-	chown wwwphpfpm:wwwphpfpm /home/wwwphpfpm
-	chmod 750 /home/wwwphpfpm
+	if [ "$CF_PHPFPM_RUN_AS_WWWDATA" != "true" ]; then
+		_log_def "createUserGroup 'wwwphpfpm'..."
+		_createUserGroup "wwwphpfpm" "${CF_WWWFPM_USER_ID}" "${CF_WWWFPM_GROUP_ID}" "www-data" || {
+			_sleepBeforeAbort
+		}
+		[ ! -d /home/wwwphpfpm ] && mkdir /home/wwwphpfpm
+		chown wwwphpfpm:wwwphpfpm /home/wwwphpfpm
+		chmod 750 /home/wwwphpfpm
+	fi
 	_log_def "createPhpFpmUploadDir..."
 	_createPhpFpmUploadDir || {
 		_log_err "Error: could not create PHP-FPM Upload dir. Aborting."
+		_sleepBeforeAbort
+	}
+	_log_def "changePhpFpmSettings..."
+	_changePhpFpmSettings || {
+		_log_err "Error: could not change PHP-FPM settings. Aborting."
 		_sleepBeforeAbort
 	}
 fi
