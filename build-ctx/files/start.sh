@@ -64,6 +64,10 @@ fi
 
 # ----------------------------------------------------------
 
+CF_WEBROOT="${CF_WEBROOT:-/var/www/html}"
+CF_WEBROOT_SITE="${CF_WEBROOT_SITE:-}"
+CF_WEBROOT_SITE_ORG="${CF_WEBROOT_SITE_ORG:-}"
+
 CF_PROJ_PRIMARY_FQDN="${CF_PROJ_PRIMARY_FQDN:-}"
 
 CF_ENABLE_HTTP=${CF_ENABLE_HTTP:-true}
@@ -352,7 +356,7 @@ function _changePhpFpmSettings() {
 	fi
 	#
 	local TMP_UTD_PATH_SED="$CF_PHPFPM_UPLOAD_TMP_DIR"
-	echo -n "$TMP_UTD_PATH_SED" | grep -e "/$" || TMP_UTD_PATH_SED+="/"
+	echo -n "$TMP_UTD_PATH_SED" | grep -q -e "/$" || TMP_UTD_PATH_SED+="/"
 	TMP_UTD_PATH_SED="$(echo -n "$TMP_UTD_PATH_SED" | sed -e 's/\//\\\//g')"
 	sed -i \
 			-e "s/<UPLOADTMPDIR>/${TMP_UTD_PATH_SED}/g" \
@@ -618,7 +622,7 @@ if [ -n "$CF_PHP_FPM_VERSION" ]; then
 			_sleepBeforeAbort
 		}
 		[ ! -d /home/wwwphpfpm ] && mkdir /home/wwwphpfpm
-		chown wwwphpfpm:wwwphpfpm /home/wwwphpfpm
+		chown wwwphpfpm:wwwphpfpm -R /home/wwwphpfpm
 		chmod 750 /home/wwwphpfpm
 	fi
 	_log_def "createPhpFpmUploadDir..."
