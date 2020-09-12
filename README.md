@@ -3,10 +3,13 @@
 For hosting static HTML websites.
 
 ## Inheritance and added packages
-- Debian Stretch
+- Debian Buster
 	- Apache 2.4
 	- graphicsmagick
 	- cron
+	- unzip
+	- sudo
+	- openssl
 	- helper scripts (remdotfiles and css_js_minimize)
 
 ## Webserver TCP Port

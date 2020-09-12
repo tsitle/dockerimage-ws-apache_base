@@ -34,6 +34,7 @@ RUN \
 				cron \
 				sudo \
 				openssl \
+				unzip \
 			# apache2 packages
 				apache2
 	# forward request and error logs to docker log collector
