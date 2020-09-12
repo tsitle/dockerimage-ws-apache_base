@@ -7,6 +7,9 @@ For hosting static HTML websites.
 	- Apache 2.4
 	- graphicsmagick
 	- cron
+	- unzip
+	- sudo
+	- openssl
 	- helper scripts (remdotfiles and css_js_minimize)
 
 ## Webserver TCP Port

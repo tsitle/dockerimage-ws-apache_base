@@ -64,7 +64,7 @@ LVAR_DEBIAN_RELEASE="stretch"
 LVAR_DEBIAN_VERSION="9.11"
 
 LVAR_IMAGE_NAME="ws-apache-base-$LVAR_DEBIAN_DIST"
-LVAR_IMAGE_VER="1.5"
+LVAR_IMAGE_VER="1.6"
 
 # ----------------------------------------------------------
 
