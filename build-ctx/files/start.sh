@@ -110,6 +110,8 @@ CF_PHPFPM_MAX_EXECUTION_TIME="${CF_PHPFPM_MAX_EXECUTION_TIME:-600}"
 CF_PHPFPM_MAX_INPUT_TIME="${CF_PHPFPM_MAX_INPUT_TIME:-600}"
 CF_PHPFPM_HTML_ERRORS=${CF_PHPFPM_HTML_ERRORS:-true}
 
+CF_APACHE_TIMEOUT="${CF_APACHE_TIMEOUT:-300}"
+
 # ----------------------------------------------------------
 
 LCFG_WS_SITES_PATH_AVAIL=""
@@ -382,6 +384,13 @@ function _changePhpFpmSettings() {
 			-e "s/^php_admin_value\[max_input_time\] = .*$/php_admin_value[max_input_time] = ${CF_PHPFPM_MAX_INPUT_TIME}/g" \
 			-e "s/^php_admin_flag\[html_errors\] = .*$/php_admin_flag[html_errors] = ${TMP_HE}/g" \
 			/etc/php/${CF_PHP_FPM_VERSION}/fpm/pool.d/www.conf
+}
+
+# @return int EXITCODE
+function _changeApacheSettings() {
+	sed -i \
+			-e "s/^Timeout .*/Timeout ${CF_APACHE_TIMEOUT}/g" \
+			/etc/apache2/apache2.conf
 }
 
 # ----------------------------------------------------------
@@ -675,6 +684,12 @@ if [ -n "$CF_PROJ_PRIMARY_FQDN" ]; then
 		_sleepBeforeAbort
 	}
 fi
+
+_log_def "changeApacheSettings..."
+_changeApacheSettings || {
+	_log_err "Error: could not change Apache settings. Aborting."
+	_sleepBeforeAbort
+}
 
 # ----------------------------------------------------------
 
