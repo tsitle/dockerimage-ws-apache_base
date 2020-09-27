@@ -61,7 +61,7 @@ _getCpuArch debian_dist >/dev/null || exit 1
 
 LVAR_DEBIAN_DIST="$(_getCpuArch debian_dist)"
 LVAR_DEBIAN_RELEASE="stretch"
-LVAR_DEBIAN_VERSION="9.11"
+LVAR_DEBIAN_VERSION="9.13"
 
 LVAR_IMAGE_NAME="ws-apache-base-$LVAR_DEBIAN_DIST"
 LVAR_IMAGE_VER="1.7"
