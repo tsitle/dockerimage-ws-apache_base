@@ -3,6 +3,7 @@
 For hosting static HTML websites.
 
 ## Inheritance and added packages
+
 - Debian Buster
 	- Apache 2.4
 	- graphicsmagick
@@ -13,12 +14,15 @@ For hosting static HTML websites.
 	- helper scripts (remdotfiles and css_js_minimize)
 
 ## Webserver TCP Port
+
 The webserver is listening only on TCP port 80 by default.
 
 ## Docker Container usage
+
 See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-apache\_base](https://github.com/tsitle/dockercontainer-ws-apache_base)
 
 ## Docker Container configuration
+
 - CF\_PROJ\_PRIMARY\_FQDN [string]: FQDN for website (e.g. "mywebsite.localhost") (default: empty)
 - CF\_SET\_OWNER\_AND\_PERMS\_WEBROOT [bool]: Recursively chown and chmod CF\_WEBROOT? (default: false)
 - CF\_WWWDATA\_USER\_ID [int]: User-ID for www-data (default: 33)
@@ -37,8 +41,10 @@ See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-
 - CF\_CSR\_SUBJECT\_LOCATION [string]: For auto-generated SSL Certificates (default: LE)
 - CF\_CSR\_SUBJECT\_ORGANIZ [string]: For auto-generated SSL Certificates (default: The IT Company)
 - CF\_CSR\_SUBJECT\_ORGUNIT [string]: For auto-generated SSL Certificates (default: IT)
+- CF\_APACHE\_TIMEOUT [int]: Number of seconds before receives and sends time out (default: 300)
 
 ## Using cron
+
 You'll need to create the crontab file `./mpcron/root` and then add some task to the file:
 
 ```
