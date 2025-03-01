@@ -64,7 +64,7 @@ LVAR_DEBIAN_RELEASE="bullseye"
 LVAR_DEBIAN_VERSION="11.2"
 
 LVAR_IMAGE_NAME="ws-apache-base-$LVAR_DEBIAN_DIST"
-LVAR_IMAGE_VER="2.7"
+LVAR_IMAGE_VER="3.0"
 
 # ----------------------------------------------------------
 
