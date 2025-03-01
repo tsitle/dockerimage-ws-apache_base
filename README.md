@@ -19,7 +19,7 @@ The webserver is listening only on TCP port 80 by default.
 
 ## Docker Container usage
 
-See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-apache\_base](https://github.com/tsitle/dockercontainer-ws-apache_base)
+See the related GitHub repository [https://github.com/tsitle/dockercontainer-ws-apache_base](https://github.com/tsitle/dockercontainer-ws-apache_base)
 
 ## Docker Container configuration
 
