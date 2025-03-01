@@ -1,4 +1,4 @@
-# Apache2 Webserver Docker Image for AARCH64, ARMv7l, X86 and X64
+# Apache2 Webserver Docker Image for AARCH64, ARMv7l and X64
 
 For hosting static HTML websites.
 
